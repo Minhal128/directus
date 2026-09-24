@@ -24,7 +24,12 @@ export function get(object: Record<string, any> | any[], path: string, defaultVa
 }
 
 function getArrayResult(object: unknown[], key: string): unknown[] | undefined {
-	const result = object.map((entry) => entry?.[key as keyof unknown]).filter((entry) => entry);
+	const result = object
+		.map((entry) => entry?.[key as keyof unknown])
+		// Only null, undefined and missing properties are dropped. Falsy values such as
+		// 0, false and "" are valid operands, while a null in a SQL NOT IN list would
+		// make the comparison unknown for every row.
+		.filter((entry) => entry !== null && entry !== undefined);
 
 	return result.length > 0 ? result.flat() : undefined;
 }
